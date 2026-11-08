@@ -1,0 +1,14 @@
+diff --git a/nanovllm_voxcpm/lora_ops/triton_ops/lora_shrink_op.py b/nanovllm_voxcpm/lora_ops/triton_ops/lora_shrink_op.py
+index 7aeef17..83ad09b 100644
+--- a/nanovllm_voxcpm/lora_ops/triton_ops/lora_shrink_op.py
++++ b/nanovllm_voxcpm/lora_ops/triton_ops/lora_shrink_op.py
+@@ -160,7 +160,8 @@ def _lora_shrink_small_m_kernel(
+         mask_k = offset_k < K
+         tiled_a = tl.load(a_ptr, mask=mask_k, other=0.0)
+         tiled_b = tl.load(b_ptr, mask=mask_k[:, None] & mask_r[None, :], other=0.0)
+-        accumulator += tl.dot(tiled_a[None, :], tiled_b, out_dtype=tl.float32)
++        # GEMV as multiply + reduce: tl.dot requires M, N, K >= 16 (at least on Triton 3.4), and M is 1 here.
++        accumulator += tl.sum(tiled_a[:, None].to(tl.float32) * tiled_b.to(tl.float32), axis=0)[None, :]
+         a_ptr += step_k * input_d1_stride
+         b_ptr += step_k * lora_d2_stride
+ 
