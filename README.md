@@ -28,8 +28,9 @@ Build args:
 push to `main` (and on manual dispatch). Tags:
 
 - `latest`: the newest `main` build.
-- `sha-<short commit>`: this repo's commit.
-- `upstream-<short UPSTREAM_REF>`: the upstream commit, read from the Dockerfile's `UPSTREAM_REF` default.
+- `upstream-<short UPSTREAM_REF>`: the newest `main` build of that upstream commit (read from the Dockerfile's
+  `UPSTREAM_REF` default).
+- `sha-<short commit>`: this repo's commit (also pushed by manual runs on other branches).
 
 The package is private, so log in first:
 
