@@ -2,7 +2,7 @@ name: publish
 
 on:
   push:
-    branches: [main, feat/2-ghcr-publish]  # TEMP: branch trigger for verification, remove before merge
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -32,7 +32,6 @@ jobs:
             /usr/local/share/boost /usr/local/lib/node_modules /usr/share/swift /usr/lib/jvm \
             /usr/local/share/powershell /usr/local/share/chromium /usr/local/share/vcpkg /usr/share/miniconda \
             /opt/microsoft /opt/google /opt/az /opt/pipx /usr/local/julia*
-          { sudo du -xh -d2 / 2>/dev/null || true; } | sort -h | tail -15  # TEMP: find what is left
           df -h /
 
       # Single source of truth for the upstream commit: the Dockerfile's ARG default.
