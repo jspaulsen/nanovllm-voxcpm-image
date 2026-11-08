@@ -22,6 +22,24 @@ Build args:
 | `TORCH_CUDA_ARCH_LIST` | `8.6;8.9;9.0;12.0` | Archs if flash-attn must compile from source. |
 | `MAX_JOBS` | `4` | Parallel compile jobs for that source build. |
 
+## Published image
+
+`.github/workflows/publish.yml` builds the Dockerfile and pushes `ghcr.io/jspaulsen/nanovllm-voxcpm-image` on every
+push to `main` (and on manual dispatch). Tags:
+
+- `latest`: the newest `main` build.
+- `upstream-<short UPSTREAM_REF>`: the newest `main` build of that upstream commit (read from the Dockerfile's
+  `UPSTREAM_REF` default).
+- `sha-<short commit>`: this repo's commit (also pushed by manual runs on other branches).
+
+The package is private, so log in first:
+
+```sh
+gh auth refresh -s read:packages   # once; the default gh token lacks it
+gh auth token | docker login ghcr.io -u <github-user> --password-stdin
+docker pull ghcr.io/jspaulsen/nanovllm-voxcpm-image:latest
+```
+
 ## Run
 
 ```sh
