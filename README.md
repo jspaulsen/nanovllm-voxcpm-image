@@ -53,13 +53,14 @@ Then:
 cp .env.example .env            # then edit
 mkdir -p .docker-cache/huggingface
 docker compose pull
-docker compose up -d
+docker compose up -d --no-build   # fail instead of building locally if the pull did not work
 curl -fsS localhost:8090/ready
 ```
 
-To pin a build, set a tag from the list above in `.env`, e.g.
-`VOXCPM_IMAGE=ghcr.io/jspaulsen/nanovllm-voxcpm-image:upstream-c702631` or `...:sha-<short commit>`, then
-`docker compose pull && docker compose up -d`. `latest` only moves when you `docker compose pull` again.
+To pin, set `VOXCPM_IMAGE` in `.env` to a `sha-<short commit>` tag (fixed), e.g.
+`ghcr.io/jspaulsen/nanovllm-voxcpm-image:sha-d41c623`, or an `upstream-<short UPSTREAM_REF>` tag such as
+`...:upstream-c702631` (moves to the newest `main` build of that upstream commit), then
+`docker compose pull && docker compose up -d --no-build`. `latest` only moves when you `docker compose pull` again.
 
 The container listens on port 8000 and serves `/health`, `/ready`, `/info`, `/generate`, `/encode_latents`,
 `/loras` and `/metrics` (interactive docs at `/docs`).
