@@ -1,0 +1,47 @@
+services:
+  voxcpm:
+    build:
+      context: .
+    image: nanovllm-voxcpm-image:local
+    restart: unless-stopped
+    # Run as the host user so the container can read model files that are only readable by their owner.
+    user: "${VOXCPM_UID:-1000}:${VOXCPM_GID:-1000}"
+    ports:
+      - "${VOXCPM_PORT:-8090}:8000"
+    environment:
+      # A local model directory (under VOXCPM_MODELS_ROOT) or a Hugging Face repo id such as openbmb/VoxCPM2.
+      NANOVLLM_MODEL_PATH: "${VOXCPM_MODEL:?set VOXCPM_MODEL to a model directory or Hugging Face repo id}"
+      HF_HUB_OFFLINE: "${VOXCPM_HF_HUB_OFFLINE:-0}"
+      # The container only sees the GPU selected below, so it is always device 0 inside.
+      NANOVLLM_SERVERPOOL_DEVICES: "0"
+      NANOVLLM_SERVERPOOL_GPU_MEMORY_UTILIZATION: "${VOXCPM_GPU_MEMORY_UTILIZATION:-0.35}"
+      # Warmup prefills this many tokens, so it sets the activation peak (must be >= max model len, 4096).
+      NANOVLLM_SERVERPOOL_MAX_NUM_BATCHED_TOKENS: "${VOXCPM_MAX_NUM_BATCHED_TOKENS:-4096}"
+      NANOVLLM_SERVERPOOL_MAX_NUM_SEQS: "${VOXCPM_MAX_NUM_SEQS:-16}"
+      NANOVLLM_LORA_ENABLED: "${VOXCPM_LORA_ENABLED:-false}"
+      # LoRA slots are preallocated; size them to match your adapters (rank, target modules) to save memory.
+      NANOVLLM_LORA_MAX_LORAS: "${VOXCPM_LORA_MAX_LORAS:-1}"
+      NANOVLLM_LORA_MAX_LORA_RANK: "${VOXCPM_LORA_MAX_LORA_RANK:-32}"
+      NANOVLLM_LORA_TARGET_MODULES_LM: "${VOXCPM_LORA_TARGET_MODULES:-}"
+      NANOVLLM_LORA_TARGET_MODULES_DIT: "${VOXCPM_LORA_TARGET_MODULES:-}"
+    volumes:
+      # Mounted at the same absolute path so absolute symlinks inside model directories still resolve.
+      - "${VOXCPM_MODELS_ROOT:?set VOXCPM_MODELS_ROOT to the directory containing your models and LoRAs}:${VOXCPM_MODELS_ROOT}:ro"
+      # HOME and the Triton / TorchInductor / nanovllm compile caches; speeds up restarts.
+      - "${VOXCPM_CACHE_DIR:-./.docker-cache}:/cache"
+      # Hugging Face cache (HF_HOME) for repo-id models.
+      - "${VOXCPM_HF_HOME:-./.docker-cache/huggingface}:/cache/huggingface"
+    shm_size: 8gb
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${VOXCPM_GPU:-1}"]
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
+      interval: 15s
+      timeout: 5s
+      start_period: 300s
+      retries: 3
