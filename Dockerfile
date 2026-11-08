@@ -56,7 +56,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 FROM ${RUNTIME_IMAGE}
 
 # gcc + Python headers: Triton and TorchInductor JIT-compile host code at runtime.
-# libav*: torchcodec loads FFmpeg's shared libraries (torchaudio.load decodes prompt audio through it).
+# libav*: FFmpeg shared libs for torchaudio / torchcodec audio decoding.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       ca-certificates \
@@ -83,13 +83,14 @@ ENV PATH=/opt/venv/bin:$PATH \
     USER=voxcpm \
     TRITON_CACHE_DIR=/cache/triton \
     TORCHINDUCTOR_CACHE_DIR=/cache/torchinductor \
-    NANOVLLM_CACHE_DIR=/cache/nanovllm \
     HF_HOME=/cache/huggingface \
     NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility
 
-WORKDIR /cache
 EXPOSE 8000
+
+# Non-root by default; compose overrides this with the host uid.
+USER 65534:65534
 
 # /health (liveness) and /ready (model loaded) are available for probes.
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

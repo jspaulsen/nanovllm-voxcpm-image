@@ -38,7 +38,7 @@ Mounts:
 
 - **Models root** (`VOXCPM_MODELS_ROOT`), read-only at the same absolute path, so absolute symlinks inside
   model directories resolve. Local models and LoRA checkpoints must live under it.
-- **`/cache`** (`VOXCPM_CACHE_DIR`): `HOME`, plus the Triton, TorchInductor and nanovllm caches.
+- **`/cache`** (`VOXCPM_CACHE_DIR`): `HOME`, plus the Triton and TorchInductor caches.
 - **`/cache/huggingface`** (`VOXCPM_HF_HOME`): `HF_HOME`, used when `VOXCPM_MODEL` is a Hub repo id.
 
 The container runs as `VOXCPM_UID:VOXCPM_GID` so it can read owner-only model files. All settings are
@@ -46,6 +46,8 @@ documented in `.env.example`; the `NANOVLLM_*` variables they map to are upstrea
 (`deployment/app/core/config.py`).
 
 ### Hugging Face model
+
+In `.env`:
 
 ```sh
 VOXCPM_MODEL=openbmb/VoxCPM2
