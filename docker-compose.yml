@@ -1,8 +1,10 @@
 services:
   voxcpm:
+    # Published image by default. `docker compose build` builds the Dockerfile and tags it with this name, so set
+    # VOXCPM_IMAGE=nanovllm-voxcpm-image:local for local builds rather than shadowing the registry tag.
+    image: "${VOXCPM_IMAGE:-ghcr.io/jspaulsen/nanovllm-voxcpm-image:latest}"
     build:
       context: .
-    image: nanovllm-voxcpm-image:local
     restart: unless-stopped
     # Run as the host user so the container can read model files that are only readable by their owner.
     user: "${VOXCPM_UID:-1000}:${VOXCPM_GID:-1000}"

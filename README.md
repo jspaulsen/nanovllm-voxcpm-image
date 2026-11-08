@@ -6,9 +6,14 @@ docs/DECISIONS.md.
 
 ## Build
 
+Only needed to run something other than the published image (see Run).
+
 ```sh
-docker compose build            # or: docker build -t nanovllm-voxcpm-image:local .
+VOXCPM_IMAGE=nanovllm-voxcpm-image:local docker compose build   # or: docker build -t nanovllm-voxcpm-image:local .
 ```
+
+Put `VOXCPM_IMAGE=nanovllm-voxcpm-image:local` in `.env` to run that build; `docker compose up -d --build`
+rebuilds and starts it. Leaving `VOXCPM_IMAGE` at the GHCR name would tag the local build with it.
 
 Build args:
 
@@ -32,22 +37,30 @@ push to `main` (and on manual dispatch). Tags:
   `UPSTREAM_REF` default).
 - `sha-<short commit>`: this repo's commit (also pushed by manual runs on other branches).
 
-The package is private, so log in first:
+## Run
+
+Compose runs `VOXCPM_IMAGE`, which defaults to `ghcr.io/jspaulsen/nanovllm-voxcpm-image:latest`. The package is
+private, so log in to GHCR once:
 
 ```sh
 gh auth refresh -s read:packages   # once; the default gh token lacks it
-gh auth token | docker login ghcr.io -u <github-user> --password-stdin
-docker pull ghcr.io/jspaulsen/nanovllm-voxcpm-image:latest
+gh auth token | docker login ghcr.io -u jspaulsen --password-stdin
 ```
 
-## Run
+Then:
 
 ```sh
 cp .env.example .env            # then edit
 mkdir -p .docker-cache/huggingface
-docker compose up -d
+docker compose pull
+docker compose up -d --no-build   # fail instead of building locally if the pull did not work
 curl -fsS localhost:8090/ready
 ```
+
+To pin, set `VOXCPM_IMAGE` in `.env` to a `sha-<short commit>` tag (fixed), e.g.
+`ghcr.io/jspaulsen/nanovllm-voxcpm-image:sha-d41c623`, or an `upstream-<short UPSTREAM_REF>` tag such as
+`...:upstream-c702631` (moves to the newest `main` build of that upstream commit), then
+`docker compose pull && docker compose up -d --no-build`. `latest` only moves when you `docker compose pull` again.
 
 The container listens on port 8000 and serves `/health`, `/ready`, `/info`, `/generate`, `/encode_latents`,
 `/loras` and `/metrics` (interactive docs at `/docs`).
