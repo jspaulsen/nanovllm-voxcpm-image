@@ -34,7 +34,8 @@ push to `main` (and on manual dispatch). Tags:
 The package is private, so log in first:
 
 ```sh
-gh auth token | docker login ghcr.io -u <github-user> --password-stdin   # token needs read:packages
+gh auth refresh -s read:packages   # once; the default gh token lacks it
+gh auth token | docker login ghcr.io -u <github-user> --password-stdin
 docker pull ghcr.io/jspaulsen/nanovllm-voxcpm-image:latest
 ```
 
