@@ -3,6 +3,8 @@ name: publish
 on:
   push:
     branches: [main]
+    # Docs-only pushes don't change the image; skip the ~16 min rebuild.
+    paths-ignore: ['**.md', 'docs/**']
   workflow_dispatch:
 
 permissions:

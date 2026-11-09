@@ -30,7 +30,7 @@ Build args:
 ## Published image
 
 `.github/workflows/publish.yml` builds the Dockerfile and pushes `ghcr.io/jspaulsen/nanovllm-voxcpm-image` on every
-push to `main` (and on manual dispatch). Tags:
+push to `main` that changes more than Markdown or `docs/` (and on manual dispatch). Tags:
 
 - `latest`: the newest `main` build.
 - `upstream-<short UPSTREAM_REF>`: the newest `main` build of that upstream commit (read from the Dockerfile's
