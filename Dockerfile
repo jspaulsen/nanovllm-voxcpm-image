@@ -1,12 +1,14 @@
 # Lean image of nanovllm-voxcpm's FastAPI deployment (upstream deployment/app).
-# Builder: CUDA devel + uv builds a non-editable venv. Runtime: plain Ubuntu (torch wheels bundle the CUDA libs).
+# Builder: CUDA devel + uv builds a non-editable venv from uv.lock. Runtime: plain Ubuntu (torch wheels bundle the
+# CUDA libs). Regenerate uv.lock after changing UPSTREAM_REF, UV_CONSTRAINTS or patches/:
+#   docker build --target lock --output . .
 
 ARG CUDA_IMAGE=nvidia/cuda:12.8.1-devel-ubuntu22.04
 ARG RUNTIME_IMAGE=ubuntu:22.04
 
 FROM ghcr.io/astral-sh/uv:0.11.6 AS uv
 
-FROM ${CUDA_IMAGE} AS builder
+FROM ${CUDA_IMAGE} AS source
 
 ARG UPSTREAM_REPO=https://github.com/a710128/nanovllm-voxcpm
 ARG UPSTREAM_REF=c702631ea33db63932f0c2288cc09a543e68a3ef
@@ -49,8 +51,22 @@ RUN if [ -n "$UV_CONSTRAINTS" ]; then \
       printf '\n[tool.uv]\nconstraint-dependencies = [%s]\n' "$deps" >> pyproject.toml; \
     fi
 
+
+# Resolves from scratch (no existing uv.lock), so it also picks up newer versions allowed by the constraints.
+FROM source AS locker
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --all-packages --no-dev --no-editable
+    uv lock
+
+FROM scratch AS lock
+COPY --from=locker /src/uv.lock /
+
+
+FROM source AS builder
+
+# --locked fails the build if uv.lock no longer matches the patched pyproject (see the header comment).
+COPY uv.lock /src/uv.lock
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --all-packages --no-dev --no-editable
 
 
 FROM ${RUNTIME_IMAGE}
