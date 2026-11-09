@@ -106,3 +106,9 @@ curl -fsS -X POST localhost:8090/loras -H 'content-type: application/json' \
 curl -fsS -X POST localhost:8090/generate -H 'content-type: application/json' \
   -d '{"target_text": "Hello there.", "lora_name": "my-lora"}' -o out.mp3
 ```
+
+## License
+
+MIT (see `LICENSE`), matching upstream. `patches/` modify upstream code, which stays under upstream's MIT license
+(Copyright (c) 2025 Guoyang Zeng and the Nano-vLLM authors). The image ships upstream's `LICENSE` in the
+`nano_vllm_voxcpm` package's `dist-info/licenses/`.
