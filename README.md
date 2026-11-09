@@ -48,14 +48,7 @@ push to `main` that changes more than Markdown or `docs/` (and on manual dispatc
 ## Run
 
 Compose runs `VOXCPM_IMAGE`, which defaults to `ghcr.io/jspaulsen/nanovllm-voxcpm-image:latest`. The package is
-private, so log in to GHCR once:
-
-```sh
-gh auth refresh -s read:packages   # once; the default gh token lacks it
-gh auth token | docker login ghcr.io -u jspaulsen --password-stdin
-```
-
-Then:
+public, so no registry login is needed:
 
 ```sh
 cp .env.example .env            # then edit

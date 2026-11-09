@@ -1,7 +1,7 @@
 # Decisions
 
 1. **Packaging repo, not a fork.** Upstream pinned by SHA and patched with `patches/*.patch`; bumping upstream is a one-line change and our diff stays visible. Easier to undo than a fork (can always fork later).
-2. **Private GitHub repo** (`jspaulsen/nanovllm-voxcpm-image`); the GHCR package inherits private visibility. Pulling needs `docker login ghcr.io`. Can be flipped public later (decision issue).
+2. **Public GitHub repo and GHCR package** (`jspaulsen/nanovllm-voxcpm-image`), so the image pulls without `docker login`. Started private; flipped public (#4). Upstream is MIT, and the repo contains no secrets (CI pushes with the workflow's `GITHUB_TOKEN`).
 3. **Image name** `ghcr.io/jspaulsen/nanovllm-voxcpm-image`, tags: `latest` (main), `sha-<our commit>`, `upstream-<short upstream sha>`.
 4. **CUDA 12.8 / torch 2.8** so one image covers sm_86 and sm_120.
 5. **Runtime base is plain `ubuntu:22.04`, not a CUDA image.** The torch/nvidia wheels bundle the CUDA user-space libraries and the NVIDIA container toolkit injects the driver; the image sets `NVIDIA_VISIBLE_DEVICES`/`NVIDIA_DRIVER_CAPABILITIES` itself. Runtime apt adds only python3 + headers, gcc (Triton/Inductor JIT) and the FFmpeg 4.4 shared libs (torchaudio 2.8 / torchcodec 0.7 load them). libsndfile comes bundled in the soundfile wheel. Overridable via `RUNTIME_IMAGE`, which must ship Python 3.10 (the venv points at `/usr/bin/python3.10`).
