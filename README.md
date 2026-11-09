@@ -27,6 +27,14 @@ Build args:
 | `TORCH_CUDA_ARCH_LIST` | `8.6;8.9;9.0;12.0` | Archs if flash-attn must compile from source. |
 | `MAX_JOBS` | `4` | Parallel compile jobs for that source build. |
 
+Python dependencies are pinned by `uv.lock`, and the build fails if the lock no longer matches. After changing
+`UPSTREAM_REF`, `UV_CONSTRAINTS` or `patches/`, or to pick up newer dependency releases, regenerate and commit it
+(pass the same `--build-arg`s as the build):
+
+```sh
+docker build --target lock --output . .
+```
+
 ## Published image
 
 `.github/workflows/publish.yml` builds the Dockerfile and pushes `ghcr.io/jspaulsen/nanovllm-voxcpm-image` on every
